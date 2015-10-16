@@ -1,16 +1,18 @@
-import os
+import os 
 import subprocess
+import csv
 
-ARPFILE="tmp"
-Hosts=dict()
+SAVEFILE="hosts"
+ARPFILE="tmp" 
+Hosts=dict() 
 devnull=open(os.devnull, 'w')
 
 class Host:
     def __init__(self, MAC, IP, track):
         self.MAC = MAC
         self.track = track
+        self.IP = IP
         if track=="yes":
-            self.IP = IP
             self.Actions=set()
             self.status="dead"
 
@@ -18,21 +20,22 @@ class Host:
         if action not in self.Actions:
             self.Actions.add(action)
             return True
-        else
+        else:
             return False
 
     def updateStatus(self, stat):
         if stat=="alive":
             self.status = "alive"
-        elif stat="dead"
-            confirmed = False
-            for i in range(1,3):
-                if not hostAlive(self.IP):
-                    break
-                if i==3:
-                    confirmed = True
-            if confirmed:
-                self.status = "dead"
+        elif stat=="dead":
+            self.status = "dead"
+            #confirmed = False
+            #for i in range(1,3):
+            #    if not hostAlive(self.IP):
+            #        break
+            #    if i==2:
+            #        confirmed = True
+            #if confirmed:
+            #    self.status = "dead"
                  
 
 def yn(ans):
@@ -59,7 +62,7 @@ def scanARP():
     os.system("arp | awk -v OFS='\t' '{print $1, $3}' > "+ARPFILE)
 
 def checkARPhosts():
-    with open(ARPFILE) as fileOBj:
+    with open(ARPFILE) as fileObj:
         for line in fileObj.readlines():
             line=line.split()
             ip=line[0]
@@ -68,9 +71,14 @@ def checkARPhosts():
                 addKnown(MAC, ip)
             elif Hosts[MAC].track=="yes":
                 if hostAlive(ip):
-                    print MAC+" is alive"
+                    Hosts[MAC].updateStatus("alive")
                 else:
-                    print MAC+"is dead"
+                    Hosts[MAC].updateStatus("dead")
+                if Hosts[MAC].status=="alive":
+                    print MAC+" is alive"
+                elif Hosts[MAC].status=="dead":
+                    print MAC+" is dead"
+    fileObj.close()
 
 def hostAlive(IP):
     resp=subprocess.call(['ping','-c1','-i0.2',IP],stdout=devnull,stderr=devnull)
@@ -79,9 +87,29 @@ def hostAlive(IP):
     else: 
         return False
 
+def saveHosts():
+    f = csv.writer(open(SAVEFILE, 'w'))
+    for key in Hosts:
+        f.writerow([Hosts[key].MAC, Hosts[key].IP, Hosts[key].track])
+
+def loadHosts():
+    try:
+        for MAC,IP,track in csv.reader(open(SAVEFILE)):
+            Hosts[MAC] = Host(MAC, IP, track)
+        return 1
+    except:
+        return 0
+
 def main():
+    if not loadHosts():
+        print "host file not loaded"        
     while 1:
-        scanARP()
-        checkARPhosts()
+        try:
+            scanARP()
+            checkARPhosts()
+        except (KeyboardInterrupt, SystemExit):
+            saveHosts()
+            devnull.close()
+            break
 
 main()
