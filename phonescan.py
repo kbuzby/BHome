@@ -6,6 +6,9 @@ SAVEFILE="hosts"
 ARPFILE="tmp" 
 Hosts=dict() 
 devnull=open(os.devnull, 'w')
+#IP Range to search
+STARTIP="192.168.1.100"
+ENDIP="192.168.1.199"
 
 class Host:
     def __init__(self, MAC, IP, track):
@@ -24,19 +27,11 @@ class Host:
             return False
 
     def updateStatus(self, stat):
-        if stat=="alive":
-            self.status = "alive"
-        elif stat=="dead":
-            self.status = "dead"
-            #confirmed = False
-            #for i in range(1,3):
-            #    if not hostAlive(self.IP):
-            #        break
-            #    if i==2:
-            #        confirmed = True
-            #if confirmed:
-            #    self.status = "dead"
-                 
+        if self.status!=stat:
+            if stat=="alive":
+                self.status = "alive"
+            elif stat=="dead":
+                self.status = "dead" 
 
 def yn(ans):
     if ans.lower() in ("yes","y","no","n"):
@@ -59,7 +54,8 @@ def addKnown(MAC, IP):
             print "Please enter only yes or no"
 
 def scanARP():
-    os.system("arp | awk -v OFS='\t' '{print $1, $3}' > "+ARPFILE)
+    if subprocess.call(['fping','-c 1','-q','-g '+STARTIP+' '+ENDIP],stdout=devnull,stderr=devnull) in (0, 1):
+        os.system("arp -n | awk -v OFS='\t' '{if(NR>1)print $1, $3}' | grep -vw 'eth0' > "+ARPFILE)
 
 def checkARPhosts():
     with open(ARPFILE) as fileObj:
@@ -81,7 +77,7 @@ def checkARPhosts():
     fileObj.close()
 
 def hostAlive(IP):
-    resp=subprocess.call(['ping','-c1','-i0.2',IP],stdout=devnull,stderr=devnull)
+    resp=subprocess.call(['fping','-c 1',IP],stdout=devnull,stderr=devnull)
     if resp==0:
         return True
     else: 
