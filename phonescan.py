@@ -1,7 +1,7 @@
 import os
 import subprocess
 import csv
-import pynma.pynma as pynma
+import pynma
 
 SAVEFILE="hosts"
 ARPFILE="tmp"
@@ -69,12 +69,13 @@ def checkARPhosts():
       if MAC not in Hosts:
         addKnown(MAC, ip)
       elif Hosts[MAC].track=="yes":
-        if Hosts[MAC].status=="dead" and hostAlive(ip):
-          if MAC==myMAC:
-            notifier = pynma.PyNMA(NMAapi)
-            notifyKyle(notifier)
-            del notifier
-          Hosts[MAC].updateStatus("alive")
+        if hostAlive(ip):
+          if Hosts[MAC].status=="dead":
+            if MAC==myMAC:
+              notifier = pynma.PyNMA(NMAapi)
+              notifyKyle(notifier)
+              del notifier
+            Hosts[MAC].updateStatus("alive")
         else:
           Hosts[MAC].updateStatus("dead")
         if Hosts[MAC].status=="alive":
