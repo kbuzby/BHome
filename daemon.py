@@ -57,8 +57,7 @@ class Daemon:
 			pid = None
 
 		if pid:
-			message = "pidfile {0} already exist. " + \ 
-								"Daemon already running?\n"
+			message = "pidfile {0} already exist. Daemon already running?\n"
 			sys.stderr.write(message.format(self.pidfile))
 			sys.exit(1)
 
@@ -67,14 +66,13 @@ class Daemon:
 
 	def stop(self):
 		try:
-			with open(self.pidfile),'r') as pf:
+			with open(self.pidfile,'r') as pf:
 				pid = int(pf.read().strip())
 		except IOError:
 			pid = None
 		
 		if not pid:
-			message = ("pidfile {0} does not exist. " + \
-									"Daemon not running?\n"
+			message = "pidfile {0} does not exist. Daemon not running?\n"
 			sys.stderr.write(message.format(self.pidfile))
 			return
 
