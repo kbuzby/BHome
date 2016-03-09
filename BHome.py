@@ -14,12 +14,13 @@ def main(hostMgr):
 
 class BHomeDaemon(Daemon):
 	def run(self):
+		hostMgr = HostManager()
 		while True:
-			main()
+			main(hostMgr)
 			time.sleep(1)
 
-"""if __name__ == "__main__":
-	daemon = BHomeDaemon('/var/run/BHome.pid')
+if __name__ == "__main__":
+	daemon = BHomeDaemon('/var/run/BHome/BHome.pid')
 	if len(sys.argv) == 2:
 		if sys.argv[1] == 'start':
 			daemon.start()
@@ -27,6 +28,9 @@ class BHomeDaemon(Daemon):
 			daemon.stop()
 		elif sys.argv[1] == 'restart':
 			daemon.restart()
+		elif sys.argv[1] == 'manual':
+			hostMgr = HostManager()
+			main(hostMgr)
 		else:
 			print "Unknown command"
 			sys.exit(2)
@@ -34,6 +38,3 @@ class BHomeDaemon(Daemon):
 	else:
 		print "usage: %s start|stop|restart" % sys.argv[0]
 		sys.exit(2)
-"""
-hostMgr = HostManager()
-main(hostMgr)

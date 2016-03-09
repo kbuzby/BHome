@@ -2,6 +2,7 @@ import os
 import subprocess
 import csv
 import pynma
+from threading import Thread
 
 myMAC="fc:db:b3:f9:0d:2f"
 NMAapi="481390ced1969e7e3514c1ec369197c78bd1d5cc427f73be"
@@ -91,13 +92,25 @@ class HostManager:
 		devnull.close()
 
 	def hostAlive(self,host):
-		devnull=open(os.devnull, 'w')
-		resp=subprocess.call(['fping','-c 1',host.IP],stdout=devnull,stderr=devnull)
-		devnull.close()
-		if resp==0:
+		results = []
+		threads = []
+		for run in range(5):
+			t = Thread(target=self.checkHost, args=(host,results))
+			t.start()
+			threads.append(t)
+		for t in threads:
+			t.join()
+		if 0 in results:
 			return True
 		else:
 			return False
+	
+	def checkHost(self,host,results):
+		devnull=open(os.devnull, 'w')
+		resp=subprocess.call(['fping','-c 3','-b 1',host.IP],stdout=devnull,stderr=devnull)
+		devnull.close()
+		results.append(resp)
+		return
 
 	def saveHosts(self):
 		f = csv.writer(open(self._saveFile, 'w'))
@@ -113,3 +126,5 @@ class HostManager:
 
 def notifyKyle(notifier):
 	notifier.push("PhoneScan","Connected to WiFi","Description","http://www.google.com")
+
+

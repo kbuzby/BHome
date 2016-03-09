@@ -4,7 +4,7 @@ import time
 import atexit
 from signal import SIGTERM
 
-class Daemon:
+class Daemon(object):
 	
 	def __init__(self,pidfile):
 		self.pidfile = pidfile
@@ -52,6 +52,7 @@ class Daemon:
 	def start(self):
 		try:
 			with open(self.pidfile,'r') as pf:
+				print "file opened"
 				pid = int(pf.read().strip())
 		except IOError:
 			pid = None
@@ -78,7 +79,7 @@ class Daemon:
 
 		try:
 			while 1:
-				os.kill(pid, signal.SIGTERM)
+				os.kill(pid, SIGTERM)
 				time.sleep(0.1)
 		except OSError as err:
 			e = str(err.args)
