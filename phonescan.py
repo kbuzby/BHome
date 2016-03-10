@@ -94,7 +94,7 @@ class HostManager:
 	def hostAlive(self,host):
 		results = []
 		threads = []
-		for run in range(5):
+		for run in range(4):
 			t = Thread(target=self.checkHost, args=(host,results))
 			t.start()
 			threads.append(t)
@@ -107,7 +107,7 @@ class HostManager:
 	
 	def checkHost(self,host,results):
 		devnull=open(os.devnull, 'w')
-		resp=subprocess.call(['fping','-c 3','-b 1',host.IP],stdout=devnull,stderr=devnull)
+		resp=subprocess.call(['fping','-c 5','-b 1',host.IP],stdout=devnull,stderr=devnull)
 		devnull.close()
 		results.append(resp)
 		return

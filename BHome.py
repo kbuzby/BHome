@@ -17,7 +17,7 @@ class BHomeDaemon(Daemon):
 		hostMgr = HostManager()
 		while True:
 			main(hostMgr)
-			time.sleep(1)
+			time.sleep(5)
 
 if __name__ == "__main__":
 	daemon = BHomeDaemon('/var/run/BHome/BHome.pid')
